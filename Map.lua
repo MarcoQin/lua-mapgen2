@@ -262,23 +262,19 @@ function Map:go(first, last)
 
     table.insert(stages,
     function()
-        print('before buildGraph: points:'..tostring(#self.points))
         self:buildGraph(self.points, self.voronoi)
-        print('finish buildGraph ')
         self.points = nil
     end)
 
     table.insert(stages,
     function()
         self:improveCorners()
-        print('finish improve Corners')
         self.voronoi:dispose()
     end)
 
 
     -- Assign elevations..
     -- Determine the elevations and water at Voronoi corners.
-    print('Assign elevations..')
     table.insert(stages,
     function()
         self:assignCornerElevations()
@@ -300,7 +296,6 @@ function Map:go(first, last)
         end
         -- Polygon elevations are the average of their corner
         self:assignPolygonElevations()
-        print('Finish Assign elevations..')
     end)
 
 
@@ -415,7 +410,6 @@ end
 function Map:buildGraph(points, voronoi)
     local p, q, point, other
     local libedges = voronoi:edges()
-    print('libedges: ', #libedges)
     local centerLookup = {}  -- dict
 
     -- Build Center objects for each of the points, and a lookup map
@@ -430,14 +424,12 @@ function Map:buildGraph(points, voronoi)
         table.insert(self.centers, p)
         centerLookup[point] = p
     end
-    print('finish add points')
 
     -- Workaround for Voronoi lib bug: we need to call region()
     -- before Edges or neighboringSites are available
     for _, p in pairs(self.centers) do
         voronoi:region(p.point)
     end
-    print('==== finish region')
 
     -- The Voronoi library generates multiple Point objects for
     -- corners, and we need to canonicalize to one Corner object.
@@ -489,7 +481,6 @@ function Map:buildGraph(points, voronoi)
         end
     end
 
-    print('before add corners')
     for _, libedge in pairs(libedges) do
         local dedge = libedge:delaunayLine()
         local vedge = libedge:voronoiEdge()
@@ -554,7 +545,6 @@ function Map:buildGraph(points, voronoi)
             addToList(edge.v1.touches, edge.d1)
         end
     end -- for _, libedge in pairs(libedges) do
-    print('finish add corners')
 end
 
 

@@ -1,9 +1,3 @@
-math.random()
-math.random()
-math.random()
-math.random()
-math.random()
-math.random()
 local Map = require("Map")
 
 local SIZE = 600
@@ -11,27 +5,12 @@ local islandType = 'Radial'
 -- local islandType = 'Square'
 -- local islandType = 'ROT'
 local pointType = 'Square'
--- local pointType = 'Hexagon'
-local numPoints = 500
+local numPoints = 5000
 local mapMode = 'Polygons'
 local map
-love.math.random()
-love.math.random()
-love.math.random()
-love.math.random()
 
 local maploader = require("maploader")
 
--- function interpolateColor(color0, color1, f)
-    -- local r = math.floor((1-f)*(color0 >> 16) + f*(color1 >> 16))
-    -- local g = math.floor((1-f)*((color0 >> 8) & 0xff) + f*((color1 >> 8) & 0xff))
-    -- local b = math.floor((1-f)*(color0 & 0xff) + f*(color1 & 0xff))
-    -- if (r > 255) then r = 255 end
-    -- if (g > 255) then g = 255 end
-    -- if (b > 255) then b = 255 end
-    -- return (r << 16) | (g << 8) | b
--- end
---
 local colors = {
     OCEAN = {68, 68, 122},
     COAST = {51, 51, 90},
@@ -65,31 +44,17 @@ local nextProcess = 1
 function love.load()
     local seed = math.floor(love.math.random() * 10000000)
     local variant = 1+math.floor(9*love.math.random())
-        -- map = Map(SIZE)
-        print('=======before build newIsland')
-        -- map:newIsland(islandType, pointType, numPoints, seed, variant)
-        print('=======after build newIsland')
-        print('=======before map:go')
-        -- map:go()
-        maploader.newMap(nm, SIZE, islandType, pointType, numPoints, seed, variant)
-        local function allDone()
-            generated = true 
-            print("all done")
-            print("nm.data", #nm.data) 
-            -- for _, v in pairs(nm.data) do
-                -- print(unpack(v))
-            -- end
+    maploader.newMap(nm, SIZE, islandType, pointType, numPoints, seed, variant)
+    local function allDone()
+        generated = true
+    end
+    local function oneDone(process_)
+        if not generated then
+            process = process_
+            nextProcess = process_ + 1
         end
-        local function oneDone(process_)
-            print("process:", process_)
-            if not generated then
-                process = process_
-                nextProcess = process_ + 1
-            end
-        end
-        maploader.start(allDone, oneDone)
-        -- generated = true
-        print('=======after map:go')
+    end
+    maploader.start(allDone, oneDone)
     print(seed)
     print(variant)
 end
@@ -99,6 +64,9 @@ local n = SIZE / math.sqrt(numPoints) * 0.5
 local line = false
 local screenWidth, screenHeight = love.graphics.getWidth(), love.graphics.getHeight()
 function love.draw()
+    love.graphics.setColor(255, 255, 255)
+    love.graphics.print("Press 'K' to generate new map", 600, 100)
+    love.graphics.print("Press 'L' to draw edges", 600, 150)
     if not generated then
         love.graphics.setColor(255, 255, 255)
         love.graphics.print("Loading...", 100, 100)
@@ -114,32 +82,17 @@ function love.draw()
         love.graphics.rectangle("fill", x, y, w, h)
         return
     end
-    -- for _, p in pairs(map.centers) do
 
-        -- local color = colors[p.biome]
-        -- if not color then
-            -- color = {255, 255, 255}
-        -- end
-        -- love.graphics.setColor(color)
-        -- love.graphics.rectangle('fill', p.point.x-n, p.point.y-n, n*2, n*2)
-
-        -- if line then
-            -- love.graphics.setColor(255, 255, 255)
-            -- love.graphics.rectangle('line', p.point.x-n, p.point.y-n, n*2, n*2)
-        -- end
-    -- end
     for _, p in pairs(nm.data) do
-        -- p {x, y, biome}
         local color = colors[p[3]]
         if not color then
             color = {255, 255, 255}
         end
         love.graphics.setColor(color)
-        -- print(unpack(p))
         love.graphics.rectangle('fill', p[1] - n, p[2]-n, n*2, n*2)
 
         if line then
-            love.graphics.setColor(255, 255, 255)
+            love.graphics.setColor(255, 255, 255, 60)
             love.graphics.rectangle('line', p[1]-n, p[2]-n, n*2, n*2)
         end
     end
@@ -154,20 +107,12 @@ end
 
 function love.keypressed(k)
     if k == "k" then
-        print("=========")
-        print(process)
         process = 0
         nextProcess = 1
-        print(process)
-        print("=========")
         generated = false
         nm.data = {}
         local seed = math.floor(love.math.random() * 10000000)
         local variant = 1+math.floor(9*love.math.random())
-        -- map = Map(SIZE)
-            -- map:newIsland(islandType, pointType, numPoints, seed, variant)
-            -- map:go()
-            -- generated = true
         maploader.newMap(nm, SIZE, islandType, pointType, numPoints, seed, variant)
         print(seed)
         print(variant)

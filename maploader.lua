@@ -45,7 +45,6 @@ if loaded == true then
             lock:push("end")
         end
         love.timer.sleep(1)
-        print("sleep over")
 
         -- done = doneChannel:pop()
     end
@@ -79,7 +78,6 @@ else
         local process = chp:pop()
         while process do
             if one ~= nil then
-                print(one)
                 one(process)
             end
             process = chp:pop()
@@ -129,7 +127,6 @@ else
 
     function maploader.start(allDonecallback_, oneDoneCallback_)
         allDonecallback = allDonecallback_
-        print(oneDoneCallback_)
         one = oneDoneCallback_
 
         local thread = love.thread.newThread(pathToThisFile)
@@ -150,7 +147,6 @@ else
                 end
             else
                 local errmsg = maploader.thread:getError()
-                print(errmsg)
                 assert(not errmsg, errmsg)
             end
         end
