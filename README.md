@@ -10,3 +10,7 @@ But unfortunately, this implementation is not work that perfect, which means the
 Lukily it works well if you only want to generate simple "Radial" shape, "Square" point type map.
 
 The "main.lua" is a "love2d" example, which show the gallery of "Radial Square" type map...
+
+![Radial](https://github.com/MarcoQin/gallery/blob/master/mapgen1.png "Radial")
+
+![ROT](https://github.com/MarcoQin/gallery/blob/master/mapgen2.png "ROT")
