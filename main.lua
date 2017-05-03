@@ -7,9 +7,9 @@ math.random()
 local Map = require("Map")
 
 local SIZE = 600
--- local islandType = 'Radial'
+local islandType = 'Radial'
 -- local islandType = 'Square'
-local islandType = 'ROT'
+-- local islandType = 'ROT'
 local pointType = 'Square'
 -- local pointType = 'Hexagon'
 local numPoints = 500
