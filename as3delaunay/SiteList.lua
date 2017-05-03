@@ -32,16 +32,13 @@ end
 
 function SiteList:next()
     if not self._sorted then
-        print("**not sorted, return nil")
         return nil
     end
     if (self._currentIndex <= #self._sites) then
         local r = self._sites[self._currentIndex]
-        print("**next r", r)
         self._currentIndex = self._currentIndex + 1
         return r
     else
-        print("**self._currentIndex, return nil", self._currentIndex, #self._sites)
         return nil
     end
 end

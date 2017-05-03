@@ -14,7 +14,6 @@ local _pool = Stack()
 
 -- static function
 function Site.create(p, index, weight, color)
-    print("Site.create")
     if _pool:size() > 0 then
         return _pool:pop():setup(p, index, weight, color)
     else
@@ -148,7 +147,6 @@ function Site:neighborSites()
 end
 
 function Site:neighborSite(edge)
-    print("Site:neighborSite")
     if self == edge:get_leftSite() then
         return edge:get_rightSite()
     end
@@ -159,7 +157,6 @@ function Site:neighborSite(edge)
 end
 
 local function Reverse (arr)
-    print("Before Reverse")
 	local i, j = 1, #arr
 
 	while i < j do
@@ -168,40 +165,28 @@ local function Reverse (arr)
 		i = i + 1
 		j = j - 1
 	end
-    print("End Reverse")
 end
 
 function Site:region(clippingBounds)
-    print("Site:region")
     -- clippingBounds: type(Rectangle)
     if self._edges == nil or #self._edges == 0 then
         return {}
     end
     if self._edgeOrientations == nil then
         self:reorderEdges()
-        print("finish Site:reorderEdges")
-        print("before Site:clipToBounds")
         self._region = self:clipToBounds(clippingBounds)
-        print("finish Site:clipToBounds")
     end
     if Polygon(self._region):winding() == Winding.CLOCKWISE then
         Reverse(self._region)
     end
-    print("FINISH Site:region")
     return self._region
 end
 
 function Site:reorderEdges()
-    print("Site:reorderEdges")
-    for k, v in ipairs(self._edges) do
-        print(k, v)
-        print(v:get_leftVertex(), v:get_rightVertex())
-    end
     local reorderer = EdgeReorderer(self._edges, "Vertex")
     self._edges = reorderer:get_edges()
     self._edgeOrientations = reorderer:get_edgeOrientations()
     reorderer:dispose()
-    print("Finish Site:reorderEdges")
 end
 
 function Site:clipToBounds(bounds)

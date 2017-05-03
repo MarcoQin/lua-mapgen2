@@ -80,7 +80,6 @@ function EdgeList:edgeListLeftNeighbor(p)
     end
     -- * Now search linear list of halfedges for the correct one */
     if halfEdge == self.leftEnd or (halfEdge ~= self.rightEnd and halfEdge:isLeftOf(p)) then
-        print(halfEdge.edgeListRightNeighbor ~= self.rightEnd)
         halfEdge = halfEdge.edgeListRightNeighbor
         while halfEdge ~= self.rightEnd and halfEdge:isLeftOf(p) do
             halfEdge = halfEdge.edgeListRightNeighbor

@@ -27,9 +27,6 @@ function EdgeReorderer:dispose()
 end
 
 function EdgeReorderer:reorderEdges(origEdges, criterion)
-    print("EdgeReorderer:reorderEdges")
-    print(criterion == Vertex)
-    print(criterion)
     local i, j
     local n = #origEdges
     local edge
@@ -47,7 +44,6 @@ function EdgeReorderer:reorderEdges(origEdges, criterion)
     -- local firstPoint = criterion == Vertex and edge:get_leftVertex() or edge:get_leftSite()
     -- local lastPoint = criterion == Vertex and edge:get_rightVertex() or edge:get_rightSite()
     local firstPoint, lastPoint
-    print("fist edge", edge)
     if criterion == "Vertex" then
         firstPoint = edge:get_leftVertex()
     else
@@ -58,7 +54,6 @@ function EdgeReorderer:reorderEdges(origEdges, criterion)
     else
         lastPoint = edge:get_rightSite()
     end
-    print(firstPoint, lastPoint)
 
 
     if (firstPoint == Vertex.VERTEX_AT_INFINITY or lastPoint == Vertex.VERTEX_AT_INFINITY) then
@@ -73,9 +68,7 @@ function EdgeReorderer:reorderEdges(origEdges, criterion)
     while nDone < n do
     -- while nDone <= 0 do
         for i = 2, n do
-            -- print(i, n)
             if not done[i] then
-                -- print('i: ', i, 'done[i]', done[i])
                 edge = origEdges[i]
                 local leftPoint, rightPoint
                 if criterion == "Vertex" then
@@ -96,13 +89,6 @@ function EdgeReorderer:reorderEdges(origEdges, criterion)
                 if leftPoint == nil or rightPoint == nil then
                     return {}
                 end
-                print("----")
-                print(leftPoint, rightPoint, firstPoint, lastPoint)
-                print(leftPoint == firstPoint)
-                print(leftPoint == lastPoint)
-                print(rightPoint == firstPoint)
-                print(rightPoint == lastPoint)
-                print("----")
                 if leftPoint == lastPoint then
                     lastPoint = rightPoint
                     table.insert(self._edgeOrientations, LR.LEFT)
@@ -125,13 +111,11 @@ function EdgeReorderer:reorderEdges(origEdges, criterion)
                     done[i] = true
                 end
                 if done[i] then
-                    print(nDone, n)
                     nDone = nDone + 1
                 end
             end
         end
     end
-    print("finish wile loop")
 
     return newEdges
 end

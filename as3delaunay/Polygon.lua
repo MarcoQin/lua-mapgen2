@@ -14,7 +14,6 @@ function Polygon:area()
 end
 
 function Polygon:winding()
-    print("before Polygon:winding")
     local _signedDoubleArea = self:signedDoubleArea()
     if _signedDoubleArea < 0 then
         return Winding.CLOCKWISE
@@ -22,12 +21,10 @@ function Polygon:winding()
     if _signedDoubleArea > 0 then
         return Winding.COUNTERCLOCKWISE
     end
-    print("Finish Polygon:winding")
     return Winding.NONE
 end
 
 function Polygon:signedDoubleArea()
-    print("before Polygon:signedDoubleArea")
     local index, nextIndex
     local n = #self._vertices
     local point, _next  -- type(Point)
@@ -40,7 +37,6 @@ function Polygon:signedDoubleArea()
         _signedDoubleArea = _signedDoubleArea + (point.x * _next.y - _next.x * point.y)
         index = index + 1
     end
-    print("finish Polygon:signedDoubleArea")
     return _signedDoubleArea
 end
 

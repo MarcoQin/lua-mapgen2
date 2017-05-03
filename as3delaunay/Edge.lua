@@ -13,7 +13,6 @@ Edge.DELETED = Edge()
 
 -- static method
 function Edge.createBisectingEdge(site0, site1)
-    print("site0", site0)
     local dx, dy, absdx, absdy
     local a, b, c
 
@@ -123,7 +122,6 @@ function Edge:get_visible()
 end
 
 function Edge:set_leftSite(s)
-    print('----set_leftSite', s)
     self._sites[LR.LEFT] = s
 end
 
@@ -132,7 +130,6 @@ function Edge:get_leftSite()
 end
 
 function Edge:set_rightSite(s)
-    print('----set_rightSite', s)
     self._sites[LR.RIGHT] = s
 end
 
@@ -141,13 +138,6 @@ function Edge:get_rightSite()
 end
 
 function Edge:site(leftRight)
-    print("Edge:site:leftright:", leftRight)
-    print("Edge:site:leftright: == LR.LEFT", leftRight == LR.LEFT)
-    print("Edge:site:self._sites:")
-    for k, v in pairs(self._sites) do
-        print (k, v)
-    end
-    print("Edge:site:self._sites[leftRight]:", self._sites[leftRight])
     return self._sites[leftRight]
 end
 

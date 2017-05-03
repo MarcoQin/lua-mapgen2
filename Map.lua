@@ -1,9 +1,14 @@
 local folderOfThisFile = (...):match("(.-)[^%/%.]+$")
 require(folderOfThisFile.."/PM_PRNG")
 require(folderOfThisFile.."/graph")
+local noise = require(folderOfThisFile.."/perlin")
 local class = require(folderOfThisFile.."/as3delaunay/middleclass")
 local Voronoi = require(folderOfThisFile.."/as3delaunay/Voronoi")
 local LineSegment = require(folderOfThisFile.."/as3delaunay/LineSegment")
+
+
+local LAKE_THRESHOLD = 0.3  -- 0 to 1, fraction of water corners for water polygon
+local SIZE = 0
 
 local IslandShape = class("IslandShape")
 --[[
@@ -43,7 +48,50 @@ function IslandShape.makeRadial(seed)
     return inside
 end
 
-function IslandShape.makePerlin(seed)
+function IslandShape.makeROT(seed)
+
+    assert(ROT, "RotLove is nil")
+
+    math.randomseed(seed)
+    math.random()
+    math.random()
+    math.random()
+    local v = seed % math.floor((math.random() * 100))
+
+    if v > 20 then v = 20 end
+    if v < 10 then v = 10 end
+
+    local cl = ROT.Map.Cellular:new(SIZE, SIZE)
+
+    local rand = math.random(0, 10000) / 100000.0
+
+    cl:randomize(.55 + rand)
+
+    local r_map = {}
+    function cbk(x, y, val)
+        if not r_map[x] then
+            r_map[x] = {}
+        end
+        r_map[x][y] = val
+    end
+
+    cl:create(cbk)
+
+
+    local function inside(q)
+        local r1 = r_map[math.floor((q.x + 1) * v)]
+        if r1 ~= nil then
+            local r2 = r1[math.floor((q.y+ 1) * v)]
+            if r2 == 1 then
+                return true
+            end
+        end
+
+        return false
+
+    end
+
+    return inside
 end
 
 function IslandShape.makeSquare(seed)
@@ -156,9 +204,6 @@ end
 
 local Map = class("Map")
 
-local LAKE_THRESHOLD = 0.3  -- 0 to 1, fraction of water corners for water polygon
-local SIZE = 0
-
 function Map:init(size)
     SIZE = size
     self.numPoints = 1
@@ -174,6 +219,7 @@ function Map:init(size)
 end
 
 function Map:newIsland(islandType, pointType, numPoints_, seed, variant)
+    print(islandType, pointType, numPoints_, seed, variant)
     self.islandShape = IslandShape['make'..islandType](seed)
     self.pointSelector = PointSelector['generate'..pointType](SIZE, seed)
     self.needsMoreRandomness = PointSelector.needsMoreRandomness(pointType)
@@ -188,10 +234,14 @@ function Map:reset()
     self.corners = {}
 end
 
-function Map:go()
+function Map:go(first, last)
+    local stages = {}
     -- Place points
-    self:reset()
-    self.points = self.pointSelector(self.numPoints)
+    table.insert(stages,
+    function()
+        self:reset()
+        self.points = self.pointSelector(self.numPoints)
+    end)
 
 
     --[[
@@ -204,47 +254,64 @@ function Map:go()
     they connect to (both along the edge and crosswise).
     ]]--
     -- Build graph
-    local voronoi = Voronoi(self.points, nil, Rectangle(0, 0, SIZE, SIZE))
-    print('before buildGraph: points:'..tostring(#self.points))
-    self:buildGraph(self.points, voronoi)
-    print('finish buildGraph ')
-    self:improveCorners()
-    print('finish improve Corners')
-    voronoi:dispose()
-    self.points = nil
+
+    table.insert(stages, 
+    function()
+        self.voronoi = Voronoi(self.points, nil, Rectangle(0, 0, SIZE, SIZE))
+    end)
+
+    table.insert(stages,
+    function()
+        print('before buildGraph: points:'..tostring(#self.points))
+        self:buildGraph(self.points, self.voronoi)
+        print('finish buildGraph ')
+        self.points = nil
+    end)
+
+    table.insert(stages,
+    function()
+        self:improveCorners()
+        print('finish improve Corners')
+        self.voronoi:dispose()
+    end)
 
 
     -- Assign elevations..
     -- Determine the elevations and water at Voronoi corners.
     print('Assign elevations..')
-    self:assignCornerElevations()
-    -- Determine polygon and corner type: ocean, coast, land.
-    self:assignOceanCoastAndLand()
-    -- Rescale elevations so that the highest is 1.0, and they're
-    -- distributed well. We want lower elevations to be more common
-    -- than higher elevations, in proportions approximately matching
-    -- concentric rings. That is, the lowest elevation is the
-    -- largest ring around the island, and therefore should more
-    -- land area than the highest elevation, which is the very
-    -- center of a perfectly circular island.
-    self:redistributeElevations(self:landCorners(self.corners))
-    -- Assign elevations to non-land corners
-    for _, q in pairs(self.corners) do
-        if q.ocean or q.coast then
-            q.elevation = 0.0
+    table.insert(stages,
+    function()
+        self:assignCornerElevations()
+        -- Determine polygon and corner type: ocean, coast, land.
+        self:assignOceanCoastAndLand()
+        -- Rescale elevations so that the highest is 1.0, and they're
+        -- distributed well. We want lower elevations to be more common
+        -- than higher elevations, in proportions approximately matching
+        -- concentric rings. That is, the lowest elevation is the
+        -- largest ring around the island, and therefore should more
+        -- land area than the highest elevation, which is the very
+        -- center of a perfectly circular island.
+        self:redistributeElevations(self:landCorners(self.corners))
+        -- Assign elevations to non-land corners
+        for _, q in pairs(self.corners) do
+            if q.ocean or q.coast then
+                q.elevation = 0.0
+            end
         end
-    end
-    -- Polygon elevations are the average of their corner
-    self:assignPolygonElevations()
-    print('Finish Assign elevations..')
+        -- Polygon elevations are the average of their corner
+        self:assignPolygonElevations()
+        print('Finish Assign elevations..')
+    end)
 
 
     -- Assign moisture
     -- Determine downslope paths.
-    self:calculateDownslopes()
-    -- Determine watersheds: for every corner, where does it flow
-    -- out into the ocean?
-    self:calculateWatersheds()
+    table.insert(stages, function()
+        self:calculateDownslopes()
+        -- Determine watersheds: for every corner, where does it flow
+        -- out into the ocean?
+        self:calculateWatersheds()
+    end)
 
 
     -- Create rivers.
@@ -257,13 +324,28 @@ function Map:go()
     -- moisture to cover the entire range evenly from 0.0
     -- to 1.0. Then assign polygon moisture as the average
     -- of the corner moisture.
-    self:assignCornerMoisture()
-    self:redistributeMoisture(self:landCorners(self.corners))
-    self:assignPolygonMoisture()
+    table.insert(stages, function()
+        self:assignCornerMoisture()
+        self:redistributeMoisture(self:landCorners(self.corners))
+        self:assignPolygonMoisture()
+    end)
 
 
     --Decorate map
-    self:assignBiomes()
+    table.insert(stages, function()
+        self:assignBiomes()
+    end)
+
+
+    if not first or not last then
+        for _, f in ipairs(stages) do
+            f()
+        end
+    else
+        for i = first, last do
+            stages[i]()
+        end
+    end
 end
 
 -- Although Lloyd relaxation improves the uniformity of polygon
@@ -353,9 +435,7 @@ function Map:buildGraph(points, voronoi)
     -- Workaround for Voronoi lib bug: we need to call region()
     -- before Edges or neighboringSites are available
     for _, p in pairs(self.centers) do
-        print("==voronoi:region:", p.point)
         voronoi:region(p.point)
-        print("==finish voronoi:region:", p.point)
     end
     print('==== finish region')
 

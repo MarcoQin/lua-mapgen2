@@ -81,7 +81,6 @@ function Voronoi:init(points, colors, plotBounds)
 end
 
 function Voronoi:setup(points, colors, plotBounds)
-    print('Voronoi:setup')
     self._sites = SiteList()
     self._sitesIndexedByLocation = {}
     self:addSites(points, colors)
@@ -100,7 +99,6 @@ end
 function Voronoi:addSite(p, color, index)
     local weight = math.random() * 100
     local site = Site.create(p, index, weight, color)
-    print("Voronoi:addSite:", site)
     self._sites:push(site)
     self._sitesIndexedByLocation[p] = site
 end
@@ -110,7 +108,6 @@ function Voronoi:edges()
 end
 
 function Voronoi:region(p)
-    print("Voronoi:region", p)
     local site = self._sitesIndexedByLocation[p]
     if site == nil then
         return {}
@@ -237,8 +234,6 @@ function Voronoi:fortunesAlgorithm()
     local halfEdges = {}
     local vertices = {}
 
-    -- print('self._sites', self._sites)
-    -- print('self._sites:next()', self._sites:next())
     local bottomMostSite = self._sites:next()
     newSite = self._sites:next()
     while true do
@@ -250,20 +245,13 @@ function Voronoi:fortunesAlgorithm()
             -- /* new site is smallest */
 
             -- // Step 8:
-            print("hahaaa")
-            print(newSite)
             lbnd = edgeList:edgeListLeftNeighbor(newSite:get_coord()) --	// the Halfedge just to the left of newSite
             rbnd = lbnd.edgeListRightNeighbor --		// the Halfedge just to the right
-            print('lbnd', lbnd)
-            print('bottomMostSite', bottomMostSite)
-            print('newSite', newSite)
             bottomSite = self:rightRegion(lbnd, bottomMostSite)  --	// this is the same as leftRegion(rbnd)
             -- // this Site determines the region containing the new site
 
             -- // Step 9:
-            print('bottomSite', bottomSite)
             edge = Edge.createBisectingEdge(bottomSite, newSite)
-            print('step 9 insert edges')
             table.insert(self._edges, edge)
 
             bisector = Halfedge.create(edge, LR.LEFT)
@@ -383,19 +371,14 @@ end
 
 function Voronoi:rightRegion(he, bottomMostSite)
     local edge = he.edge
-    print('rightRegion, he', he)
-    print('rightRegion, edge', edge)
-    print('rightRegion, he.edge', he.edge)
     if edge == nil then
         return bottomMostSite
     end
-    print('rightRegion, he.leftRight', he.leftRight)
     return edge:site(LR.other(he.leftRight))
 end
 
 -- static methods
 function Voronoi.compareByYThenX(s1, s2)
-    print('Voronoi.compareByYThenX', s1, s2)
     -- s1, s2: type(Site)
     if s1:get_y() < s2:get_y() then return -1 end
     if s1:get_y() > s2:get_y() then return 1 end
