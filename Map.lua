@@ -1,4 +1,5 @@
 local folderOfThisFile = (...):match("(.-)[^%/%.]+$")
+package.path = package.path..";"..folderOfThisFile.."/?.lua"
 require(folderOfThisFile.."/PM_PRNG")
 require(folderOfThisFile.."/graph")
 local noise = require(folderOfThisFile.."/perlin")
