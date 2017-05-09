@@ -1,5 +1,5 @@
 local folderOfThisFile = (...):match("(.-)[^%/%.]+$")
-package.path = package.path..";"..folderOfThisFile.."/?.lua"
+package.path = package.path..";"..folderOfThisFile.."/?.lua;"..folderOfThisFile.."\\?.lua"
 require(folderOfThisFile.."/PM_PRNG")
 require(folderOfThisFile.."/graph")
 local class = require(folderOfThisFile.."/as3delaunay/middleclass")
