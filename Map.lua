@@ -2,7 +2,6 @@ local folderOfThisFile = (...):match("(.-)[^%/%.]+$")
 package.path = package.path..";"..folderOfThisFile.."/?.lua"
 require(folderOfThisFile.."/PM_PRNG")
 require(folderOfThisFile.."/graph")
-local noise = require(folderOfThisFile.."/perlin")
 local class = require(folderOfThisFile.."/as3delaunay/middleclass")
 local Voronoi = require(folderOfThisFile.."/as3delaunay/Voronoi")
 local LineSegment = require(folderOfThisFile.."/as3delaunay/LineSegment")
